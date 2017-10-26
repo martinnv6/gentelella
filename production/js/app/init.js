@@ -144,20 +144,20 @@ function drawGraphRep(data){
 		type: 'line',
           series: {
             lines: {
-              show: false,
-              fill: true
+              show: true,
+              fill: false
             },
             splines: {
               show: true,
-              tension: 0.4,
-              lineWidth: 1,
+              tension: 0.01,
+              lineWidth: 2,
               fill: 0.4
             },
             points: {
-              radius: 0,
+              radius: 3,
               show: true
             },
-            shadowSize: 2
+						shadowSize: 2
           },
           grid: {
             verticalLines: true,
@@ -182,9 +182,10 @@ function drawGraphRep(data){
           yaxis: {
             ticks: 8,
             tickColor: "rgba(51, 51, 51, 0.06)",
-          },
-          tooltip: true
-        }
+					}
+				}
+          
+        
          var vectors=[];
         
 
@@ -209,11 +210,28 @@ function drawGraphRep(data){
         
 
 
-        if ($("#chart_plot_01").length){
+        if ($("#chart_tecnicos").length){
 			console.log('Plot1');
 			
-			$.plot( $("#chart_plot_01"), vectors,  chart_plot_01_rep );
+			$.plot( $("#chart_tecnicos"), vectors,  chart_plot_01_rep );
 		}
+}
+
+function drawSummary(data)
+{
+	$.each(data, function(item1, val1){
+		var sum = 0;
+		var count = 0;
+		$.each(val1, function(item, val) {
+			//if(item.TECNICO == val1.TECNICO){
+							sum+= val.CANTIDAD;
+							count +=1;							//}
+					}); // there was also a ) missing here
+		
+		console.log(sum);
+		$("#finalizados > div > p:eq(0)").text("Total finalizados: " + sum + " en " + count +" dias habiles");
+		$("#diasContados > p:eq(0)").text("Promedio diario: " + (sum/count).toFixed(2));
+	});
 }
 
 function getReparacionesPorTecnico(){
@@ -245,6 +263,7 @@ function getReparacionesPorTecnico(){
 		}).done(function( data ) {
 			
 			drawGraphRep(data);
+			drawSummary(data);
 
 			
 		}).fail( function(xhr, textStatus, errorThrown) {
