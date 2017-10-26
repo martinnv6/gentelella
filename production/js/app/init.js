@@ -7,7 +7,10 @@ $(document).ready(function(){
 		  type: "GET",
 		  dataType: 'json',
 		  url: "https://fixmensintegration.azurewebsites.net/api/Tecnicos",
-		  //data: data 
+		  data: {
+		  	fechaInicio: moment().subtract(1, 'years').format('YYYY-MM-DD'),
+		  	fechaFin: moment().format('YYYY-MM-DD')
+		   } 
 		}).done(function( data ) {
 			data.sort();
 			$.each(data, function(val, text) {
