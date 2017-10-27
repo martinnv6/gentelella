@@ -231,8 +231,8 @@ function drawSummary(data)
 		console.log(sum);
 		var duration = moment.duration(moment(finRepTec).diff(moment(iniRepTec)));
 		var diffDays = duration.asDays();
-		$("#finalizados > div > p:eq(0)").text("Total finalizados: " + sum + " en " + diffDays +" dias");
-		$("#diasContados > p:eq(0)").text("Promedio diario: " + (sum/diffDays).toFixed(2) + " y dias con 0 rep: "+(diffDays - count));
+		$("#finalizados > div > p:eq(0)").text("Total finalizados: " + sum + " en " + Math.round(diffDays) +" dias");
+		$("#diasContados > p:eq(0)").text("Promedio diario: " + (sum/diffDays).toFixed(2) + " y dias con 0 rep: "+Math.round(diffDays - count));
 	});
 }
 
