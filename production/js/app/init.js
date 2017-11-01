@@ -1,6 +1,11 @@
 
 $(document).ready(function(){
-	
+	$(document).ajaxStart(function(){
+		$("#wait").css("display", "block");
+	});
+	$(document).ajaxComplete(function(){
+			$("#wait").css("display", "none");
+	});
 	var iniRepTec,finRepTec;
 		$.ajax({
 		  method: "GET",
@@ -8,8 +13,8 @@ $(document).ready(function(){
 		  dataType: 'json',
 		  url: "https://fixmensintegration.azurewebsites.net/api/Tecnicos",
 		  data: {
-		  	fechaInicio: moment().subtract(1, 'years').format('YYYY-MM-DD'),
-		  	fechaFin: moment().format('YYYY-MM-DD')
+		  	fechaInicio: moment().subtract(1, 'years').format('YYYY-MM-DDTHH:mm:ss'),
+		  	fechaFin: moment().format('YYYY-MM-DDTHH:mm:ss')
 		   } 
 		}).done(function( data ) {
 			data.sort();
@@ -171,7 +176,8 @@ function drawGraphRep(data){
           xaxis: {
             tickColor: "rgba(51, 51, 51, 0.06)",
             mode: "time",
-            tickSize: [1, "day"],
+						tickSize: [1, "day"],
+						timezone: "browser",
             //tickLength: 10,
             axisLabel: "Date",
             axisLabelUseCanvas: true,
@@ -222,10 +228,16 @@ function drawSummary(data)
 	$.each(data, function(item1, val1){
 		var sum = 0;
 		var count = 0;
+		var countRep = 0;
+		var sumRep = 0;
 		$.each(val1, function(item, val) {
 			//if(item.TECNICO == val1.TECNICO){
 							sum+= val.CANTIDAD;
-							count +=1;							//}
+							count +=1;
+							if(val.GENERADO > 0){
+								countRep +=1;
+								sumRep +=val.GENERADO;
+							}							//}
 					}); // there was also a ) missing here
 		
 		console.log(sum);
@@ -233,10 +245,51 @@ function drawSummary(data)
 		var diffDays = duration.asDays();
 		$("#finalizados > div > p:eq(0)").text("Total finalizados: " + sum + " en " + Math.round(diffDays) +" dias");
 		$("#diasContados > p:eq(0)").text("Promedio diario: " + (sum/diffDays).toFixed(2) + " y dias con 0 rep: "+Math.round(diffDays - count));
+
+		$("#reparados > p:eq(0)").text("Finalizados reparados: " + countRep + " Total: $" + sumRep +".00");
+		$("#noReparados > div > p:eq(0)").text("Finalizados sin reparacion: " + (sum-countRep) );
 	});
 }
 
 function getReparacionesPorTecnico(){
+	var names = '';
+			$("#dropdown_tecnicos select option:selected").each(function () {
+		   var $this = $(this);
+		   if ($this.length) {
+		    var selText = $this.text();
+		    names += selText + ',';
+		   }
+		});
+	//var userName = $('#dropdown_tecnicos').find("option:selected").text();
+	var fechaInicio = iniRepTec;
+	var fechaFin = finRepTec;
+	var soloEntregado = false; //ToDo hacerlo variable
+
+	$.ajax({
+		  method: "GET",
+		  type: "GET",
+		  dataType: 'json',
+		  url: "https://fixmensintegration.azurewebsites.net/api/ReparacionesSummary",
+		   data:{
+		   	userName: names,
+		   	fechaInicio: fechaInicio,
+		   	fechaFin:fechaFin,
+		   	soloEntregado : soloEntregado
+		  },
+		  dataType: 'json'
+		}).done(function( data ) {
+			
+			drawGraphRep(data);
+			drawSummary(data);
+
+			
+		}).fail( function(xhr, textStatus, errorThrown) {
+			
+			  
+	  });
+
+}
+function getReparacionesDetallePorTecnico(){
 	var names = '';
 			$("#dropdown_tecnicos select option:selected").each(function () {
 		   var $this = $(this);
@@ -334,8 +387,8 @@ function getReparacionesPorTecnico(){
 			});
 			$('#reportrange_rep').on('apply.daterangepicker', function(ev, picker) {
 			  console.log("apply event fired, start/end dates are " + picker.startDate.format('YYYY-MM-DD') + " to " + picker.endDate.format('YYYY-MM-DD'));
-			  iniRepTec = picker.startDate.format('YYYY-MM-DD');
-			  finRepTec = picker.endDate.format('YYYY-MM-DD');
+			  iniRepTec = picker.startDate.format('YYYY-MM-DDTHH:mm:ss');
+			  finRepTec = picker.endDate.format('YYYY-MM-DDTHH:mm:ss')
 			  getReparacionesPorTecnico();
 			});
 			$('#reportrange_rep').on('cancel.daterangepicker', function(ev, picker) {
